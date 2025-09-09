@@ -10,3 +10,6 @@ name = "rlinks"
 # Optional: credentials if required by your setup (leave empty to use OS-based auth)
 user = "rlinks"
 password = "rlinks"
+
+# Name of the graph
+graph_name = "rlinks"
