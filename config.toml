@@ -1,0 +1,12 @@
+# Application configuration
+[database]
+# Location of the database server
+host = "localhost"
+port = 5455
+
+# Name of the PostgreSQL database to connect to
+name = "rlinks"
+
+# Optional: credentials if required by your setup (leave empty to use OS-based auth)
+user = "rlinks"
+password = "rlinks"
