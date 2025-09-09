@@ -3,11 +3,11 @@ from __future__ import annotations
 import json
 import os
 import pathlib
-from typing import Optional, Mapping, Any, Iterable
-
 import tomllib
-import psycopg
+from typing import Optional, Mapping, Any, LiteralString
 
+import psycopg
+from psycopg import sql
 
 # Default locations to look for the configuration file.
 # You can override via the environment variable APP_CONFIG_TOML.
@@ -112,7 +112,7 @@ class GraphCursor:
     """
 
     def __init__(self, graph_name: str, cursor: psycopg.Cursor) -> None:
-        self.graph_name = str(graph_name)
+        self.graph_name = graph_name
         self._cursor = cursor
 
     def __enter__(self) -> "GraphCursor":
@@ -128,13 +128,17 @@ class GraphCursor:
         # Do not suppress exceptions.
         return False
 
-    def _to_sql(self, query: str) -> str:
-        return f"SELECT * FROM cypher('{self.graph_name}', $${query}$$, %s::agtype)" \
-               " AS (result agtype);"
+    def _to_sql(self, query: LiteralString) -> sql.Composed:
+        return sql.SQL(
+            """
+            SELECT * FROM cypher({}, $${}$$, %s::agtype)
+                AS (result  agtype);
+            """
+        ).format(self.graph_name, sql.SQL(query))
 
     def execute(
         self,
-        query: str,
+        query: LiteralString,
         params: Optional[Mapping[str, Any]] = None,
     ) -> int:
         """
@@ -158,7 +162,7 @@ class GraphCursor:
 
     def query(
             self,
-            query: str,
+            query: LiteralString,
             params: Optional[Mapping[str, Any]] = None,
     ) -> list[Any]:
         """
