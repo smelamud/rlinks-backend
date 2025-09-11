@@ -19,7 +19,7 @@ class ShortUrl(BaseModel):
 
 
 @router.post("/bookmark")
-def create_bookmark(bookmark: Bookmark, cursor: DependsGraphCursor) -> ShortUrl:
+def register_bookmark(bookmark: Bookmark, cursor: DependsGraphCursor) -> ShortUrl:
     existing_names = cursor.query(
         """
         MATCH (s:ShortUrl)-[:REFERS]->(:Document)<-[:POINTS_TO]-(:Bookmark {url: $url})

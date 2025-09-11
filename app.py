@@ -4,9 +4,11 @@ import uvicorn
 from fastapi import FastAPI
 
 import api
+import public
 
 app = FastAPI()
 app.include_router(api.router)
+app.include_router(public.router)
 
 
 if __name__ == "__main__":
