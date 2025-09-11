@@ -3,11 +3,10 @@ import os
 import uvicorn
 from fastapi import FastAPI
 
-import api
-import public
+from api import public, bookmark
 
 app = FastAPI()
-app.include_router(api.router)
+app.include_router(bookmark.router)
 app.include_router(public.router)
 
 
