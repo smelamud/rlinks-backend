@@ -61,7 +61,7 @@ def _connect(config: dict) -> psycopg.Connection:
     connection = psycopg.connect(**kwargs)
     with connection.cursor() as cur:
         cur.execute("LOAD 'age'")
-        cur.execute('SET search_path = ag_catalog, "$user", public;')
+        cur.execute('SET search_path = ag_catalog, "$user", public')
 
     return connection
 
@@ -94,7 +94,7 @@ class GraphCursor:
         return sql.SQL(
             """
             SELECT * FROM cypher({}, $${}$$, %s::agtype)
-                AS (result  agtype);
+                AS (result agtype);
             """
         ).format(self.graph_name, sql.SQL(query))
 
