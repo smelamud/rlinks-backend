@@ -9,54 +9,20 @@ from psycopg import sql
 from config import config
 
 
-def _db_settings(config: dict) -> dict:
-    """
-    Extract database settings from the loaded configuration.
-
-    Required:
-      - database.name (or database.dbname)
-    Optional:
-      - database.host (default: localhost)
-      - database.port (default: 5432)
-      - database.user
-      - database.password
-    """
-    db = config.get("database", {})
-    name = db.get("name") or db.get("dbname") or db.get("database")
-    if not name:
-        raise ValueError(
-            "Missing database name. Provide [database].name in your configuration."
-        )
-
-    host = db.get("host", "localhost")
-    port = int(db.get("port", 5432))
-    user = db.get("user")
-    password = db.get("password")
-
-    return {
-        "host": host,
-        "port": port,
-        "dbname": name,
-        "user": user,
-        "password": password,
-    }
-
-
-def _connect(config: dict) -> psycopg.Connection:
+def _connect() -> psycopg.Connection:
     """
     Create a new psycopg connection using settings from the configuration.
     """
-    settings = _db_settings(config)
     kwargs = {
-        "host": settings["host"],
-        "port": settings["port"],
-        "dbname": settings["dbname"],
+        "host": config.db_host,
+        "port": config.db_port,
+        "dbname": config.db_name,
     }
     # Only include optional keys if provided
-    if settings.get("user"):
-        kwargs["user"] = settings["user"]
-    if settings.get("password"):
-        kwargs["password"] = settings["password"]
+    if config.db_user:
+        kwargs["user"] = config.db_user
+    if config.db_password:
+        kwargs["password"] = config.db_password
 
     connection = psycopg.connect(**kwargs)
     with connection.cursor() as cur:
@@ -151,7 +117,7 @@ class GraphCursor:
 
 class Graph:
     """
-    A lightweight wrapper around psycopg.Connection that works with 'with' statement.
+    A lightweight wrapper around psycopg.Connection.
 
     Usage:
         with Graph(config) as g:
@@ -165,7 +131,6 @@ class Graph:
 
     def __init__(
         self,
-        config: dict,
         *,
         commit_on_exit: bool = True,
     ) -> None:
@@ -173,12 +138,11 @@ class Graph:
         Initialize Graph by creating a new connection from the provided config.
         Requires 'graph_name' to be set in the configuration.
         """
-        graph_name = config.get("database", {}).get("graph_name")
-        if not graph_name or not str(graph_name).strip():
+        if not config.graph_name or not config.graph_name.strip():
             raise ValueError("Missing 'graph_name' in configuration.")
-        self.graph_name: str = str(graph_name)
+        self.graph_name: str = config.graph_name
 
-        self._connection: psycopg.Connection = _connect(config)
+        self._connection: psycopg.Connection = _connect()
         self._commit_on_exit = commit_on_exit
 
     def __enter__(self) -> "Graph":
@@ -223,6 +187,6 @@ class Graph:
 
 
 def use_graph_cursor():
-    with Graph(config) as graph:
+    with Graph() as graph:
         with graph.cursor() as cursor:
             yield cursor
