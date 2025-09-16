@@ -5,7 +5,8 @@ from fastapi import Depends, APIRouter
 from pydantic import BaseModel
 
 import db
-from db.bookmarks import find_short_url_by_bookmark_url, create_short_url
+from db.bookmarks import find_short_url_by_bookmark_url, create_short_url, \
+    delete_bookmark_by_url
 from db.tags import tag_document, is_document_tagged, create_tag_if_absent
 
 router = APIRouter(prefix="/api/bookmark")
@@ -34,3 +35,17 @@ def register_bookmark(bookmark: Bookmark, cursor: DependsGraphCursor) -> ShortUr
             tag_document(cursor, bookmark.url, tag)
 
     return ShortUrl(url=f"/{short_name}")
+
+
+class BookmarkUrl(BaseModel):
+    url: str
+
+
+class OkResponse(BaseModel):
+    ok: bool = True
+
+
+@router.delete("")
+def delete_bookmark(bookmark_url: BookmarkUrl, cursor: DependsGraphCursor):
+    delete_bookmark_by_url(cursor, bookmark_url.url)
+    return OkResponse()

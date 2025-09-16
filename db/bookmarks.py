@@ -42,3 +42,15 @@ def find_bookmark_url_by_short_url(cursor: db.GraphCursor, name: str) -> str | N
     )
     target_url = urls[0] if urls else None
     return target_url
+
+
+def delete_bookmark_by_url(cursor: db.GraphCursor, url: str):
+    cursor.execute(
+        """
+        MATCH (b:Bookmark {url: $url})
+        DETACH DELETE b
+        """,
+        {
+            "url": url,
+        }
+    )
