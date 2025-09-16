@@ -1,13 +1,18 @@
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Depends
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, FileResponse
 
 import db
 from db.bookmarks import find_bookmark_url_by_short_url
 
 router = APIRouter()
 DependsGraphCursor = Annotated[db.GraphCursor, Depends(db.use_graph_cursor)]
+
+
+@router.get("/")
+def root():
+    return FileResponse("static/index.html")
 
 
 @router.get("/{name}")
