@@ -1,3 +1,5 @@
+from typing import List
+
 import db
 
 
@@ -52,5 +54,20 @@ def delete_bookmark_by_url(cursor: db.GraphCursor, url: str):
         """,
         {
             "url": url,
+        }
+    )
+
+
+def find_alternative_bookmark_urls_by_short_url(
+        cursor: db.GraphCursor, name: str
+) -> List[str]:
+    return cursor.query(
+        """
+        MATCH (:ShortUrl {name: $name})-[:REFERS]->(d:Document)-[:TAGGED_BY]->(:Tag)
+              <-[:TAGGED_BY]-(ad:Document)<-[:POINTS_TO]-(b:Bookmark)
+        RETURN b.url
+        """,
+        {
+            "name": name,
         }
     )
