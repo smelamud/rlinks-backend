@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('bookmark-form');
   const input = document.getElementById('url-input');
+  const tagsInput = document.getElementById('tags-input');
   const result = document.getElementById('result');
 
   if (!form || !input || !result) {
@@ -10,6 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
   async function onSubmit(e) {
     e.preventDefault();
     const url = input.value.trim();
+    const rawTags = tagsInput ? tagsInput.value.trim() : '';
+    const tags = rawTags ? rawTags.split(/[,\s]+/).map(t => t.trim()).filter(Boolean) : [];
     if (!url) return;
 
     result.textContent = 'Submitting...';
@@ -17,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const resp = await fetch('/api/bookmark', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
+        body: JSON.stringify({ url, tags })
       });
 
       if (!resp.ok) {
@@ -34,6 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
       result.appendChild(a);
 
       input.value = '';
+      if (tagsInput) {
+        tagsInput.value = '';
+      }
       input.focus();
     } catch (err) {
       result.textContent = `Error: ${err && err.message ? err.message : 'Unknown error'}`;
